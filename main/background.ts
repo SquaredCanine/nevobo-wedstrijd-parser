@@ -4,6 +4,7 @@ import serve from 'electron-serve'
 import { createWindow } from './helpers'
 import { REQUEST_DIFFERENCE, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2 } from '../common/events'
 import XLSX from 'xlsx'
+import { GameEntry, MatchedGame } from '../common/interfaces'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -13,7 +14,7 @@ if (isProd) {
   app.setPath('userData', `${app.getPath('userData')} (development)`)
 }
 
-;(async () => {
+; (async () => {
   await app.whenReady()
 
   const mainWindow = createWindow('main', {
@@ -45,7 +46,7 @@ ipcMain.on('message', async (event, arg) => {
 const getMatchFile = (): string[] | undefined => {
   return dialog.showOpenDialogSync({
     title: "Kies je wedstrijd excel bestand",
-    filters: [{ name: "Excel", extensions: ['xlsx']}],
+    filters: [{ name: "Excel", extensions: ['xlsx'] }],
     properties: ["openFile"]
   })
 }
@@ -53,7 +54,7 @@ const getMatchFile = (): string[] | undefined => {
 let selectedFile1: string | undefined = undefined
 let selectedFile2: string | undefined = undefined
 
-ipcMain.on(REQUEST_OPEN_FILE_1, async(event, arg) => {
+ipcMain.on(REQUEST_OPEN_FILE_1, async (event, arg) => {
   const files = getMatchFile();
   if (files) {
     selectedFile1 = files[0]
@@ -62,7 +63,7 @@ ipcMain.on(REQUEST_OPEN_FILE_1, async(event, arg) => {
   event.reply(RESPONSE_OPEN_FILE_1, selectedFile1)
 })
 
-ipcMain.on(REQUEST_OPEN_FILE_2, async(event, arg) => {
+ipcMain.on(REQUEST_OPEN_FILE_2, async (event, arg) => {
   const files = getMatchFile();
   if (files) {
     selectedFile2 = files[0]
@@ -71,9 +72,26 @@ ipcMain.on(REQUEST_OPEN_FILE_2, async(event, arg) => {
   event.reply(RESPONSE_OPEN_FILE_2, selectedFile2)
 })
 
-ipcMain.on(REQUEST_DIFFERENCE, async(event, arg) => {
+ipcMain.on(REQUEST_DIFFERENCE, async (event, arg) => {
   updateDifferences(event)
 })
+
+const convertToGameEntry = (entry: unknown): GameEntry => {
+  return {
+    datum: entry['Datum'],
+    tijd: entry['Tijd'],
+    thuisTeam: entry['Team thuis'],
+    uitTeam: entry['Team uit'],
+    locatie: entry['Locatie'],
+    veld: entry['Veld'],
+    regio: entry['Regio'],
+    poule: entry['Poule'],
+    code: entry['Code'],
+    zaalCode: entry['Zaalcode'],
+    zaal: entry['Zaal'],
+    plaats: entry['Plaats']
+  }
+}
 
 const updateDifferences = (event: Electron.IpcMainEvent) => {
   if (!selectedFile1 || !selectedFile2) {
@@ -81,25 +99,30 @@ const updateDifferences = (event: Electron.IpcMainEvent) => {
   } else {
     const workbook1 = XLSX.readFile(selectedFile1);
     const workbook2 = XLSX.readFile(selectedFile2);
-    const sheet1 = XLSX.utils.sheet_to_json(workbook1.Sheets[workbook1.SheetNames[0]], {raw: false})
-    const sheet2 = XLSX.utils.sheet_to_json(workbook2.Sheets[workbook2.SheetNames[0]], {raw: false})
+    const sheet1 = XLSX.utils.sheet_to_json(workbook1.Sheets[workbook1.SheetNames[0]], { raw: false })
+    const sheet2 = XLSX.utils.sheet_to_json(workbook2.Sheets[workbook2.SheetNames[0]], { raw: false })
     const codes1 = sheet1.map((entry) => entry['Code'])
     const codes2 = sheet2.map((entry) => entry['Code'])
-    const addedGames = sheet2.filter((entry) => !codes1.includes(entry['Code'])) 
-    const removedGames = sheet1.filter((entry) => !codes2.includes(entry['Code'])) 
-    const changedGames = sheet2.filter((secondEntry) => {
+    const addedGames = sheet2.filter((entry) => !codes1.includes(entry['Code'])).map((entry) => convertToGameEntry(entry))
+    const removedGames = sheet1.filter((entry) => !codes2.includes(entry['Code'])).map((entry) => convertToGameEntry(entry))
+    const changedGames: MatchedGame[] = sheet2.filter((secondEntry) => {
       const code = secondEntry['Code']
-      let isSameEntry = false
+      let isSameEntry = true
       if (codes1.includes(code)) {
         const firstEntry = sheet1.find((fullEntry) => fullEntry['Code'] === code)
         isSameEntry = firstEntry['Datum'] === secondEntry['Datum'] &&
-                      firstEntry['Tijd'] === secondEntry['Tijd'] &&
-                      firstEntry['Team uit'] === secondEntry['Team uit'] &&
-                      firstEntry['Veld'] === secondEntry['Veld']
+          firstEntry['Tijd'] === secondEntry['Tijd'] &&
+          firstEntry['Team uit'] === secondEntry['Team uit'] &&
+          firstEntry['Veld'] === secondEntry['Veld']
       }
-      return !isSameEntry 
+      return !isSameEntry
+    }).map((secondEntry) => {
+      const firstEntry = sheet1.find((fullEntry) => fullEntry['Code'] === secondEntry['Code'])
+      return {
+        oldGame: convertToGameEntry(firstEntry),
+        newGame: convertToGameEntry(secondEntry)
+      }
     })
-    console.log(XLSX.utils.sheet_to_json(workbook1.Sheets[workbook1.SheetNames[0]]))
     event.reply(RESPONSE_DIFFERENCE, addedGames, removedGames, changedGames)
   }
 }

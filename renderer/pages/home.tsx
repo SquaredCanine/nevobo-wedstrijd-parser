@@ -3,6 +3,26 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Image from 'next/image'
 import { REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2 } from '../../common/events'
+import { GameEntry, MatchedGame } from '../../common/interfaces'
+import styled from 'styled-components'
+
+const Attribute = styled.div`
+  width: 7vw;
+`
+
+const DeletedGame = styled.div`
+  background-color: red;
+`
+
+const AddedGame = styled.div`
+  background-color: green;
+`
+
+const ChangedGame = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  background-color: yellow;
+`
 
 export default function HomePage() {
   const [message, setMessage] = React.useState('No message found')
@@ -25,43 +45,63 @@ export default function HomePage() {
     window.ipc.on(RESPONSE_OPEN_FILE_2, (message: string | undefined) => {
       setFile2(message)
     })
-    window.ipc.on(RESPONSE_DIFFERENCE, (addedGames: any[], removedGames: any[], changedGames: any[]) => {
+    window.ipc.on(RESPONSE_DIFFERENCE, (addedGames: GameEntry[], removedGames: GameEntry[], changedGames: MatchedGame[]) => {
       setAdditions(addedGames)
       setDeletions(removedGames)
       setChanges(changedGames)
     })
   }, [])
 
+  const renderDeletedGames = (deletedGames: GameEntry[]) => {
+    return (
+      <>
+        {deletedGames.map((game) =>
+          <DeletedGame>
+              {Object.values(game).join(" | ")}
+          </DeletedGame>)}
+      </>
+    )
+  }
+
+  const renderAddedGames = (addedGames: GameEntry[]) => {
+    return (
+      <>
+        {addedGames.map((game) =>
+          <AddedGame>
+              {Object.values(game).join(" | ")}
+          </AddedGame>)}
+      </>
+    )
+  }
+
+  const renderChangedGames = (changedGames: MatchedGame[]) => {
+    console.log(changedGames.length)
+    return (
+      <>
+        {changedGames.map(({ oldGame, newGame }) => {
+          return (
+            <ChangedGame>
+              {
+                Object.entries(newGame).map(([key, value], index) => {
+                  if (oldGame[key] === value) {
+                    return <Attribute>{value}</Attribute>
+                  } else {
+                    return <Attribute><b>{value}</b></Attribute>
+                  }
+                })
+              }
+            </ChangedGame>
+          )
+        })}
+      </>
+    )
+  }
 
   return (
     <React.Fragment>
       <Head>
         <title>Home - Nextron (basic-lang-typescript)</title>
       </Head>
-      <div>
-        <p>
-          ⚡ Electron + Next.js ⚡ -
-          <Link href="/next">
-            <a>Go to next page</a>
-          </Link>
-        </p>
-        <Image
-          src="/images/logo.png"
-          alt="Logo image"
-          width="256px"
-          height="256px"
-        />
-      </div>
-      <div>
-        <button
-          onClick={() => {
-            window.ipc.send('message', 'Hello')
-          }}
-        >
-          Test IPC
-        </button>
-        <p>{message}</p>
-      </div>
       <div>
         <button
           onClick={() => {
@@ -84,15 +124,15 @@ export default function HomePage() {
         <p>{file2}</p>
       </div>
       <div>
-        { (!deletions || !additions || !changes) && <>Selecteer 2 bestanden alstublieft<br /></>}
+        {(!deletions || !additions || !changes) && <>Selecteer 2 bestanden alstublieft<br /></>}
         Deleted games:
-        { deletions && deletions.map((object) => JSON.stringify(object)) }
+        {deletions && renderDeletedGames(deletions)}
         <br />
         Added games:
-        { additions && additions.map((object) => JSON.stringify(object)) }
+        {additions && renderAddedGames(additions)}
         <br />
         Changed games:
-        { changes && changes.map((object) => JSON.stringify(object)) }
+        {changes && renderChangedGames(changes)}
         <br />
       </div>
     </React.Fragment>
