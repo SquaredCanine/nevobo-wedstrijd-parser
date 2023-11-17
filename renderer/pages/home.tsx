@@ -11,10 +11,14 @@ const Attribute = styled.div`
 `
 
 const DeletedGame = styled.div`
+  display: flex;
+  justify-content: space-evenly;
   background-color: red;
 `
 
 const AddedGame = styled.div`
+  display: flex;
+  justify-content: space-evenly;
   background-color: green;
 `
 
@@ -57,7 +61,9 @@ export default function HomePage() {
       <>
         {deletedGames.map((game) =>
           <DeletedGame>
-              {Object.values(game).join(" | ")}
+            {Object.values(game).map((value) => {
+              return <Attribute>{value}</Attribute>
+            })}
           </DeletedGame>)}
       </>
     )
@@ -68,7 +74,9 @@ export default function HomePage() {
       <>
         {addedGames.map((game) =>
           <AddedGame>
-              {Object.values(game).join(" | ")}
+            {Object.values(game).map((value) => {
+              return <Attribute>{value}</Attribute>
+            })}
           </AddedGame>)}
       </>
     )
