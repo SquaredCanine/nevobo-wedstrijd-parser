@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2 } from '../../common/events'
 import { GameEntry, MatchedGame } from '../../common/interfaces'
 import styled from 'styled-components'
+import NavBar from '../components/NavBar'
 
 const Attribute = styled.div`
   width: 7vw;
@@ -110,6 +111,7 @@ export default function HomePage() {
       <Head>
         <title>Home - Nextron (basic-lang-typescript)</title>
       </Head>
+      <NavBar />
       <div>
         <button
           onClick={() => {

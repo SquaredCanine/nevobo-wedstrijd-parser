@@ -17,3 +17,7 @@ export interface GameEntry {
     zaal: string,
     plaats: string
 }
+
+export interface PlannedMatch {
+    //TODO Match a game entry to a scheidsrechter and teller
+}
