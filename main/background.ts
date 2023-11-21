@@ -2,9 +2,10 @@ import path from 'path'
 import { app, dialog, ipcMain } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
-import { REQUEST_DIFFERENCE, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2 } from '../common/events'
+import { REQUEST_DIFFERENCE, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2, RESPONSE_SCHEDULE } from '../common/events'
 import XLSX from 'xlsx'
 import { GameEntry, MatchedGame } from '../common/interfaces'
+import { ScheduleLoader } from './planner/scheduleLoader'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -53,6 +54,7 @@ const getMatchFile = (): string[] | undefined => {
 
 let selectedFile1: string | undefined = undefined
 let selectedFile2: string | undefined = undefined
+let openSchedule: ScheduleLoader | undefined = undefined
 
 ipcMain.on(REQUEST_OPEN_FILE_1, async (event, arg) => {
   const files = getMatchFile();
@@ -76,22 +78,31 @@ ipcMain.on(REQUEST_DIFFERENCE, async (event, arg) => {
   updateDifferences(event)
 })
 
-const convertToGameEntry = (entry: unknown): GameEntry => {
-  return {
-    datum: entry['Datum'],
-    tijd: entry['Tijd'],
-    thuisTeam: entry['Team thuis'],
-    uitTeam: entry['Team uit'],
-    locatie: entry['Locatie'],
-    veld: entry['Veld'],
-    regio: entry['Regio'],
-    poule: entry['Poule'],
-    code: entry['Code'],
-    zaalCode: entry['Zaalcode'],
-    zaal: entry['Zaal'],
-    plaats: entry['Plaats']
+ipcMain.on(REQUEST_OPEN_SCHEDULE, async (event, scheduleFile) => {
+  if (scheduleFile) {
+    openSchedule = new ScheduleLoader(undefined, scheduleFile)
+  } else {
+    const files = getMatchFile();
+    if (files) {
+      openSchedule = new ScheduleLoader(files[0], undefined)
+    }
   }
-}
+  if (openSchedule) {
+    event.reply(RESPONSE_SCHEDULE, openSchedule.schedule.wedstrijden)
+  }
+})
+
+ipcMain.on(REQUEST_SAVE_SCHEDULE, async (event, arg) => {
+  if (openSchedule) {
+    openSchedule.save()
+  }
+})
+
+ipcMain.on(REQUEST_UPDATE_SCHEDULE, async (event, wedstrijden) => {
+  if (openSchedule) {
+    openSchedule.update(wedstrijden)
+  }
+})
 
 const updateDifferences = (event: Electron.IpcMainEvent) => {
   if (!selectedFile1 || !selectedFile2) {
@@ -103,8 +114,8 @@ const updateDifferences = (event: Electron.IpcMainEvent) => {
     const sheet2 = XLSX.utils.sheet_to_json(workbook2.Sheets[workbook2.SheetNames[0]], { raw: false })
     const codes1 = sheet1.map((entry) => entry['Code'])
     const codes2 = sheet2.map((entry) => entry['Code'])
-    const addedGames = sheet2.filter((entry) => !codes1.includes(entry['Code'])).map((entry) => convertToGameEntry(entry))
-    const removedGames = sheet1.filter((entry) => !codes2.includes(entry['Code'])).map((entry) => convertToGameEntry(entry))
+    const addedGames = sheet2.filter((entry) => !codes1.includes(entry['Code'])).map((entry) => ScheduleLoader.convertToGameEntry(entry))
+    const removedGames = sheet1.filter((entry) => !codes2.includes(entry['Code'])).map((entry) => ScheduleLoader.convertToGameEntry(entry))
     const changedGames: MatchedGame[] = sheet2.filter((secondEntry) => {
       const code = secondEntry['Code']
       let isSameEntry = true
@@ -119,8 +130,8 @@ const updateDifferences = (event: Electron.IpcMainEvent) => {
     }).map((secondEntry) => {
       const firstEntry = sheet1.find((fullEntry) => fullEntry['Code'] === secondEntry['Code'])
       return {
-        oldGame: convertToGameEntry(firstEntry),
-        newGame: convertToGameEntry(secondEntry)
+        oldGame: ScheduleLoader.convertToGameEntry(firstEntry),
+        newGame: ScheduleLoader.convertToGameEntry(secondEntry)
       }
     })
     event.reply(RESPONSE_DIFFERENCE, addedGames, removedGames, changedGames)

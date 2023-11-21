@@ -12,8 +12,8 @@ const Bar = styled.div`
     margin: 2vh 0vw;
 `
 
-const Entry = styled.div<{ currentPath?: boolean }>`
-    background-color: ${props => props.currentPath ? "white" : "#2f3241"};
+const Entry = styled.div<{ currentpath: boolean }>`
+    background-color: ${props => props.currentpath ? "white" : "#2f3241"};
 
     a {
         color: #74b1be;
@@ -28,12 +28,12 @@ const Entry = styled.div<{ currentPath?: boolean }>`
 export default function NavBar() {
     return (
         <Bar>
-            <Entry currentPath={usePathname() === '/home/'}>
+            <Entry currentpath={usePathname() && usePathname() === '/home/'}>
                 <Link href="/home">
                     VERSCHIL
                 </Link>
             </Entry>
-            <Entry currentPath={usePathname() === '/next/'}>
+            <Entry currentpath={usePathname() && usePathname() === '/next/'}>
                 <Link href="/next">
                     PLANNER
                 </Link>

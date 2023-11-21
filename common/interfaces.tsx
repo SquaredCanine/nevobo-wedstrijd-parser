@@ -18,6 +18,17 @@ export interface GameEntry {
     plaats: string
 }
 
+export interface Official {
+    naam: string,
+    team ?: string
+}
+
+export interface Scheidsrechter extends Official {
+    licentieNiveau: string
+}
+
 export interface PlannedMatch {
-    //TODO Match a game entry to a scheidsrechter and teller
+    wedstrijd: GameEntry,
+    teller: Official,
+    scheidsrechter: Scheidsrechter
 }
