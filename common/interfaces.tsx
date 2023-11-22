@@ -18,13 +18,18 @@ export interface GameEntry {
     plaats: string
 }
 
+export interface Team {
+    naam: String,
+    officials: Official[]
+}
+
 export interface Official {
     naam: string,
     team ?: string
 }
-
+ 
 export interface Scheidsrechter extends Official {
-    licentieNiveau: string
+    licentieNiveau: number
 }
 
 export interface PlannedMatch {

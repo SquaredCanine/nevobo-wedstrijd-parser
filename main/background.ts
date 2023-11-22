@@ -2,10 +2,11 @@ import path from 'path'
 import { app, dialog, ipcMain } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
-import { REQUEST_DIFFERENCE, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2, RESPONSE_SCHEDULE } from '../common/events'
+import { REQUEST_DIFFERENCE, REQUEST_OFFICIALS, REQUEST_OFFICIALS_OPEN, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_DIFFERENCE, RESPONSE_OFFICIALS, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2, RESPONSE_SCHEDULE } from '../common/events'
 import XLSX from 'xlsx'
 import { GameEntry, MatchedGame } from '../common/interfaces'
 import { ScheduleLoader } from './planner/scheduleLoader'
+import { Organization } from './organization/organization'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -52,9 +53,18 @@ const getMatchFile = (): string[] | undefined => {
   })
 }
 
+const getRefereeFile = (): string[] | undefined => {
+  return dialog.showOpenDialogSync({
+    title: "Kies je scheidsrechters excel bestand",
+    filters: [{ name: "Excel", extensions: ['xlsx'] }],
+    properties: ["openFile"]
+  })
+}
+
 let selectedFile1: string | undefined = undefined
 let selectedFile2: string | undefined = undefined
 let openSchedule: ScheduleLoader | undefined = undefined
+let organization: Organization | undefined = undefined
 
 ipcMain.on(REQUEST_OPEN_FILE_1, async (event, arg) => {
   const files = getMatchFile();
@@ -89,6 +99,22 @@ ipcMain.on(REQUEST_OPEN_SCHEDULE, async (event, scheduleFile) => {
   }
   if (openSchedule) {
     event.reply(RESPONSE_SCHEDULE, openSchedule.schedule.wedstrijden)
+  }
+})
+
+ipcMain.on(REQUEST_OFFICIALS_OPEN, async (event, scheduleFile) => {
+  const files = getRefereeFile();
+  if (files) {
+    organization = new Organization(files[0])
+  }
+  if (organization) {
+    event.reply(RESPONSE_OFFICIALS, organization.teams)
+  }
+})
+
+ipcMain.on(REQUEST_OFFICIALS, async (event, scheduleFile) => {
+  if (organization) {
+    event.reply(RESPONSE_OFFICIALS, organization.teams)
   }
 })
 
