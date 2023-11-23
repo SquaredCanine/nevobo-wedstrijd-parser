@@ -8,7 +8,7 @@ let organization: Organization | undefined = undefined
 const getRefereeFile = (): string[] | undefined => {
     return dialog.showOpenDialogSync({
         title: "Kies je scheidsrechters excel bestand",
-        filters: [{ name: "Excel", extensions: ['xlsx'] }],
+        filters: [{ name: "Excel", extensions: ['xlsx'] }, { name: "JSON", extensions: ['json'] }],
         properties: ["openFile"]
     })
 }

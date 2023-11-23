@@ -8,6 +8,7 @@ import { GameEntry, MatchedGame } from '../common/interfaces'
 import { ScheduleLoader } from './planner/scheduleLoader'
 import { Organization } from './organization/organization'
 import { initializeOrgEventHandlers } from './organization/eventHandlers'
+import { initializeScheduleEventHandlers } from './planner/eventHandlers'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -46,11 +47,13 @@ app.on('window-all-closed', () => {
  */
 
 initializeOrgEventHandlers(ipcMain)
+initializeScheduleEventHandlers(ipcMain)
 
 ipcMain.on('message', async (event, arg) => {
   console.log("message!")
   event.reply('message', `${arg} World!`)
 })
+
 
 const getMatchFile = (): string[] | undefined => {
   return dialog.showOpenDialogSync({
@@ -62,7 +65,6 @@ const getMatchFile = (): string[] | undefined => {
 
 let selectedFile1: string | undefined = undefined
 let selectedFile2: string | undefined = undefined
-let openSchedule: ScheduleLoader | undefined = undefined
 
 ipcMain.on(REQUEST_OPEN_FILE_1, async (event, arg) => {
   const files = getMatchFile();
@@ -84,32 +86,6 @@ ipcMain.on(REQUEST_OPEN_FILE_2, async (event, arg) => {
 
 ipcMain.on(REQUEST_DIFFERENCE, async (event, arg) => {
   updateDifferences(event)
-})
-
-ipcMain.on(REQUEST_OPEN_SCHEDULE, async (event, scheduleFile) => {
-  if (scheduleFile) {
-    openSchedule = new ScheduleLoader(undefined, scheduleFile)
-  } else {
-    const files = getMatchFile();
-    if (files) {
-      openSchedule = new ScheduleLoader(files[0], undefined)
-    }
-  }
-  if (openSchedule) {
-    event.reply(RESPONSE_SCHEDULE, openSchedule.schedule.wedstrijden)
-  }
-})
-
-ipcMain.on(REQUEST_SAVE_SCHEDULE, async (event, arg) => {
-  if (openSchedule) {
-    openSchedule.save()
-  }
-})
-
-ipcMain.on(REQUEST_UPDATE_SCHEDULE, async (event, wedstrijden) => {
-  if (openSchedule) {
-    openSchedule.update(wedstrijden)
-  }
 })
 
 const updateDifferences = (event: Electron.IpcMainEvent) => {

@@ -14,10 +14,10 @@ export class Organization {
         "S-V6": 1
     }
 
-    constructor(excelFile: string) {
+    constructor(file: string) {
         fs.mkdirSync(Organization.organizationFolder, { recursive: true })
-        if (excelFile) {
-            const workbook = XLSX.readFile(excelFile);
+        if (file && file.includes('.xlsx')) {
+            const workbook = XLSX.readFile(file);
             let officials: Scheidsrechter[] = []
             workbook.SheetNames.forEach((sheetName) => {
                 const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { raw: false })
@@ -34,8 +34,11 @@ export class Organization {
                     officials
                 }
             ]
+            this.organizationFile = `${Organization.organizationFolder}/${new Date().getTime()}.json`
+        } else if (file && file.includes(".json")) {
+            this.teams = JSON.parse(fs.readFileSync(file, 'utf-8'))
+            this.organizationFile = file
         }
-        this.organizationFile = `${Organization.organizationFolder}/${new Date().getTime()}.json`
     }
 
     save() {

@@ -1,6 +1,7 @@
 export const REQUEST_OPEN_FILE_1 = "request-open-file-1"
 export const REQUEST_OPEN_FILE_2 = "request-garbled"
 export const REQUEST_DIFFERENCE = "request-difference"
+export const REQUEST_SCHEDULE = "request-schedule"
 export const REQUEST_OPEN_SCHEDULE = "request-open-schedule"
 export const REQUEST_SAVE_SCHEDULE = "request-save-schedule"
 export const REQUEST_UPDATE_SCHEDULE = "request-update-schedule"

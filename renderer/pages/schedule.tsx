@@ -1,8 +1,8 @@
 import React from 'react'
 import Head from 'next/head'
 import NavBar from '../components/NavBar'
-import { REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_SCHEDULE, RESPONSE_SCHEDULE_SAVE } from '../../common/events'
-import { PlannedMatch } from '../../common/interfaces'
+import { REQUEST_SCHEDULE, REQUEST_OFFICIALS, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_OFFICIALS, RESPONSE_SCHEDULE, RESPONSE_SCHEDULE_SAVE } from '../../common/events'
+import { Official, PlannedMatch, Scheidsrechter, Team } from '../../common/interfaces'
 import styled from 'styled-components'
 
 const Attribute = styled.div`
@@ -17,9 +17,9 @@ const Game = styled.div`
 `
 
 export default function SchedulePage() {
-  //TODO Load a schedule and edit it.
-  //TODO Send new schedule to backend for saving.
   const [scheduleMap, setScheduleMap] = React.useState<Map<string, PlannedMatch>>();
+  const [teams, setTeams] = React.useState<Map<string, Team>>(new Map());
+  const [officials, setOfficials] = React.useState<Official[]>([]);
 
   React.useEffect(() => {
     window.ipc.on(RESPONSE_SCHEDULE, (schedule: PlannedMatch[]) => {
@@ -31,28 +31,72 @@ export default function SchedulePage() {
     window.ipc.on(RESPONSE_SCHEDULE_SAVE, (message: string) => {
       alert(message)
     })
+    window.ipc.on(RESPONSE_OFFICIALS, (teams: Team[]) => {
+      const result = teams
+        .sort((a, b) => a.naam.localeCompare(b.naam))
+        .reduce((map, obj) => (map[obj.naam] = obj, map), new Map<string, Team>);
+      setTeams(result)
+      setOfficials(teams.flatMap((team) => team.officials))
+    })
+    window.ipc.send(REQUEST_OFFICIALS, undefined)
+    window.ipc.send(REQUEST_SCHEDULE, undefined)
   }, [])
 
+  const renderOfficialSelectionMenu = (callback: (naam: string) => void, current: Official | undefined) => {
+    return (
+      <select
+        value={(current && current.naam) || "Geen"}
+        onChange={(event) => { callback(event.target.value) }}
+      >
+        {
+          Object.values(teams).map((team: Team) => {
+            return (
+              <optgroup label={team.naam}>
+                {
+                  team.officials.map((official) => {
+                    return (
+                      <option value={official.naam}>{official.naam}</option>
+                    )
+                  })
+                }
+              </optgroup>
+            )
+          })
+        }
+      </select>
+    )
+  }
+
   const convertMapToComponents = () => {
-    let components = []
+
     const handleTellerChange = (gameCode, value) => {
       const newEntry = scheduleMap.get(gameCode)
-      if (!newEntry.teller) {
-        newEntry.teller = {naam: ""}
-      }
-      newEntry.teller.naam = value;
+      const official = officials.find((official) => official.naam === value)
+      newEntry.teller = official;
       setScheduleMap((map) => new Map(map.set(gameCode, newEntry)))
+      window.ipc.send(REQUEST_UPDATE_SCHEDULE, Array.from(scheduleMap.values()))
     }
+
     const handleScheidsrechterChange = (gameCode, value) => {
+      console.log("Updating scheidsrechter: " + JSON.stringify(value))
       const newEntry = scheduleMap.get(gameCode)
-      if (!newEntry.scheidsrechter) {
-        newEntry.scheidsrechter = {team: "", naam: "", licentieNiveau: "0"}
+      const official = officials.find((official) => official.naam === value)
+      let scheidsrechter: Scheidsrechter
+      if (official.licentieNiveau) {
+        scheidsrechter = official as Scheidsrechter
+      } else {
+        scheidsrechter = {
+          naam: value.naam,
+          licentieNiveau: 0,
+        }
       }
-      newEntry.scheidsrechter.naam = value;
+      newEntry.scheidsrechter = scheidsrechter;
       setScheduleMap((map) => new Map(map.set(gameCode, newEntry)))
+      window.ipc.send(REQUEST_UPDATE_SCHEDULE, Array.from(scheduleMap.values()))
     }
-    scheduleMap.forEach((game, code) => {
-      components.push(
+
+    return Array.from(scheduleMap.entries()).map(([code, game]) => {
+      return (
         <Game>
           <Attribute>{game.wedstrijd.datum}</Attribute>
           <Attribute>{game.wedstrijd.tijd}</Attribute>
@@ -60,19 +104,11 @@ export default function SchedulePage() {
           <Attribute>{game.wedstrijd.thuisTeam}</Attribute>
           <Attribute>{game.wedstrijd.uitTeam}</Attribute>
           <Attribute>COACH</Attribute>
-          <input
-            type="text"
-            value={(game.scheidsrechter && game.scheidsrechter.naam) || "vul in!"}
-            onChange={(e) => { handleScheidsrechterChange(code, e.target.value) }}
-          />
-          <input
-            type="text"
-            value={(game.teller && game.teller.naam) || "vul in!"}
-            onChange={(e) => handleTellerChange(code, e.target.value)} />
+          { /** Scheidsrechter */ renderOfficialSelectionMenu((official) => handleScheidsrechterChange(code, official), game.scheidsrechter)}
+          { /** Teller */ renderOfficialSelectionMenu((official) => handleTellerChange(code, official), game.teller)}
         </Game>
       )
     })
-    return components
   }
 
   const renderSchedule = () => {
