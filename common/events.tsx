@@ -5,7 +5,7 @@ export const REQUEST_OPEN_SCHEDULE = "request-open-schedule"
 export const REQUEST_SAVE_SCHEDULE = "request-save-schedule"
 export const REQUEST_UPDATE_SCHEDULE = "request-update-schedule"
 export const REQUEST_OFFICIALS = "request-officials"
-export const REQUEST_OFFICIALS_OPEN = "request-officials"
+export const REQUEST_OFFICIALS_OPEN = "request-officials-open"
 export const REQUEST_OFFICIALS_UPDATE = "request-officials-update"
 export const REQUEST_OFFICIALS_SAVE = "request-officials-save"
 

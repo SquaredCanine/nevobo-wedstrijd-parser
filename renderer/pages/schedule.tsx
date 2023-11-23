@@ -16,7 +16,7 @@ const Game = styled.div`
   color: white;
 `
 
-export default function NextPage() {
+export default function SchedulePage() {
   //TODO Load a schedule and edit it.
   //TODO Send new schedule to backend for saving.
   const [scheduleMap, setScheduleMap] = React.useState<Map<string, PlannedMatch>>();

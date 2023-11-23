@@ -7,6 +7,7 @@ import XLSX from 'xlsx'
 import { GameEntry, MatchedGame } from '../common/interfaces'
 import { ScheduleLoader } from './planner/scheduleLoader'
 import { Organization } from './organization/organization'
+import { initializeOrgEventHandlers } from './organization/eventHandlers'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -40,6 +41,12 @@ app.on('window-all-closed', () => {
   app.quit()
 })
 
+/**
+ * Initialize event handlers
+ */
+
+initializeOrgEventHandlers(ipcMain)
+
 ipcMain.on('message', async (event, arg) => {
   console.log("message!")
   event.reply('message', `${arg} World!`)
@@ -53,18 +60,9 @@ const getMatchFile = (): string[] | undefined => {
   })
 }
 
-const getRefereeFile = (): string[] | undefined => {
-  return dialog.showOpenDialogSync({
-    title: "Kies je scheidsrechters excel bestand",
-    filters: [{ name: "Excel", extensions: ['xlsx'] }],
-    properties: ["openFile"]
-  })
-}
-
 let selectedFile1: string | undefined = undefined
 let selectedFile2: string | undefined = undefined
 let openSchedule: ScheduleLoader | undefined = undefined
-let organization: Organization | undefined = undefined
 
 ipcMain.on(REQUEST_OPEN_FILE_1, async (event, arg) => {
   const files = getMatchFile();
@@ -99,22 +97,6 @@ ipcMain.on(REQUEST_OPEN_SCHEDULE, async (event, scheduleFile) => {
   }
   if (openSchedule) {
     event.reply(RESPONSE_SCHEDULE, openSchedule.schedule.wedstrijden)
-  }
-})
-
-ipcMain.on(REQUEST_OFFICIALS_OPEN, async (event, scheduleFile) => {
-  const files = getRefereeFile();
-  if (files) {
-    organization = new Organization(files[0])
-  }
-  if (organization) {
-    event.reply(RESPONSE_OFFICIALS, organization.teams)
-  }
-})
-
-ipcMain.on(REQUEST_OFFICIALS, async (event, scheduleFile) => {
-  if (organization) {
-    event.reply(RESPONSE_OFFICIALS, organization.teams)
   }
 })
 

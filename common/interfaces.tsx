@@ -19,7 +19,7 @@ export interface GameEntry {
 }
 
 export interface Team {
-    naam: String,
+    naam: string,
     officials: Official[]
 }
 

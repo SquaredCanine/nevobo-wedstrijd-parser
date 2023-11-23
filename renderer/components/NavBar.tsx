@@ -33,8 +33,8 @@ export default function NavBar() {
                     VERSCHIL
                 </Link>
             </Entry>
-            <Entry $currentpath={usePathname() && usePathname() === '/next/'}>
-                <Link href="/next">
+            <Entry $currentpath={usePathname() && usePathname() === '/schedule/'}>
+                <Link href="/schedule">
                     PLANNER
                 </Link>
             </Entry>

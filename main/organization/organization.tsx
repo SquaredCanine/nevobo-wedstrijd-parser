@@ -37,4 +37,8 @@ export class Organization {
         }
         this.organizationFile = `${Organization.organizationFolder}/${new Date().getTime()}.json`
     }
+
+    save() {
+        fs.writeFile(this.organizationFile, JSON.stringify(this.teams, undefined, 4), {encoding: 'utf-8'}, (err) => console.log(err))
+    }
 }
