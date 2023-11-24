@@ -26,7 +26,7 @@ export default function TeamsPage() {
     const [teams, setTeams] = React.useState<Team[]>([]);
     const [teamNames, setTeamNames] = React.useState<string[]>([]);
     const [nieuwTeam, setNieuwTeam] = React.useState<string>("");
-    const [nieuweScheidsrechter, setNieuweScheidsrechter] = React.useState<{naam ?: string, team ?: string, niveau ?: number}>(undefined)
+    const [nieuweScheidsrechter, setNieuweScheidsrechter] = React.useState<{ naam?: string, team?: string, niveau?: number }>(undefined)
 
     React.useEffect(() => {
         window.ipc.on(RESPONSE_OFFICIALS, (teams: Team[]) => {
@@ -83,7 +83,7 @@ export default function TeamsPage() {
                         niveau
                     })
                 } else {
-                    setNieuweScheidsrechter({niveau: +niveau})
+                    setNieuweScheidsrechter({ niveau: +niveau })
                 }
             }
         }
@@ -95,7 +95,7 @@ export default function TeamsPage() {
                     naam
                 })
             } else {
-                setNieuweScheidsrechter({naam})
+                setNieuweScheidsrechter({ naam })
             }
         }
 
@@ -106,7 +106,7 @@ export default function TeamsPage() {
                     team
                 })
             } else {
-                setNieuweScheidsrechter({team})
+                setNieuweScheidsrechter({ team })
             }
         }
 
@@ -119,7 +119,7 @@ export default function TeamsPage() {
                 <input
                     type="text"
                     value={naam}
-                    onChange={(e) => { voegNaamToe(e.target.value)}} />
+                    onChange={(e) => { voegNaamToe(e.target.value) }} />
                 <input
                     type="text"
                     value={officialNiveau}
@@ -192,13 +192,9 @@ export default function TeamsPage() {
         )
     }
 
-    return (
-        <React.Fragment>
-            <Head>
-                <title>Next - Nextron (basic-lang-typescript)</title>
-            </Head>
-            <NavBar />
-            <div>
+    const renderSelecteerTeam = () => {
+        return (
+            <>
                 <button
                     onClick={() => {
                         window.ipc.send(REQUEST_OFFICIALS_OPEN, undefined); console.log("Triggered");
@@ -206,7 +202,14 @@ export default function TeamsPage() {
                 >
                     Selecteer scheidsrechters bestand
                 </button>
-                Vul hier je teams en scheidsrechters in!
+                Vul hier je teams en scheidsrechters in !
+            </>
+        )
+    }
+
+    const renderTeamOverzicht = () => {
+        return (
+            <>
                 {
                     teams.map((team) => { return renderTeam(team) })
                 }
@@ -217,6 +220,23 @@ export default function TeamsPage() {
                     renderAddMember()
                 }
                 <button onClick={(e) => { window.ipc.send(REQUEST_OFFICIALS_SAVE, undefined) }}>Save</button>
+            </>
+        )
+    }
+
+    return (
+        <React.Fragment>
+            <Head>
+                <title>Next - Nextron (basic-lang-typescript)</title>
+            </Head>
+            <NavBar />
+            <div>
+                {
+                    teams.length <= 0 && renderSelecteerTeam()
+                }
+                {
+                    teams.length > 0 && renderTeamOverzicht()
+                }
             </div>
         </React.Fragment>
     )

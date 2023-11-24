@@ -6,6 +6,7 @@ import { REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, RESPONSE_DIFFERENCE, RESPONSE
 import { GameEntry, MatchedGame } from '../../common/interfaces'
 import styled from 'styled-components'
 import NavBar from '../components/NavBar'
+import { Body } from '../components/styles'
 
 const Attribute = styled.div`
   width: 7vw;
@@ -111,40 +112,42 @@ export default function HomePage() {
       <Head>
         <title>Home - Nextron (basic-lang-typescript)</title>
       </Head>
-      <NavBar />
-      <div>
-        <button
-          onClick={() => {
-            window.ipc.send(REQUEST_OPEN_FILE_1, undefined)
-          }}
-        >
-          Select file 1
-        </button>
-        <p>{file1}</p>
-      </div>
-      <div id="asdfasdfasdf">
-        <button
-          onClick={() => {
-            console.log("????")
-            window.ipc.send(REQUEST_OPEN_FILE_2, undefined)
-          }}
-        >
-          Select file 2
-        </button>
-        <p>{file2}</p>
-      </div>
-      <div>
-        {(!deletions || !additions || !changes) && <>Selecteer 2 bestanden alstublieft<br /></>}
-        Deleted games:
-        {deletions && renderDeletedGames(deletions)}
-        <br />
-        Added games:
-        {additions && renderAddedGames(additions)}
-        <br />
-        Changed games:
-        {changes && renderChangedGames(changes)}
-        <br />
-      </div>
+      <Body>
+        <NavBar />
+        <div>
+          <button
+            onClick={() => {
+              window.ipc.send(REQUEST_OPEN_FILE_1, undefined)
+            }}
+          >
+            Select file 1
+          </button>
+          <p>{file1}</p>
+        </div>
+        <div id="asdfasdfasdf">
+          <button
+            onClick={() => {
+              console.log("????")
+              window.ipc.send(REQUEST_OPEN_FILE_2, undefined)
+            }}
+          >
+            Select file 2
+          </button>
+          <p>{file2}</p>
+        </div>
+        <div>
+          {(!deletions || !additions || !changes) && <>Selecteer 2 bestanden alstublieft<br /></>}
+          Deleted games:
+          {deletions && renderDeletedGames(deletions)}
+          <br />
+          Added games:
+          {additions && renderAddedGames(additions)}
+          <br />
+          Changed games:
+          {changes && renderChangedGames(changes)}
+          <br />
+        </div>
+      </Body>
     </React.Fragment>
   )
 }

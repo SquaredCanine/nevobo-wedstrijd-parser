@@ -1,47 +1,63 @@
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
+import React from "react"
 import styled from "styled-components"
-import css from "styled-jsx/css"
 
 const Bar = styled.div`
-    width: 99vw;
+    width: 100vw;
     display: flex;
-    background-color: #2f3241;
+    background-color: #00162b;
     justify-content: space-evenly;
     color: #74b1be;
-    margin: 2vh 0vw;
+    padding: 20px 0vh;
 `
 
 const Entry = styled.div<{ $currentpath: boolean }>`
-    background-color: ${props => props.$currentpath ? "white" : "#2f3241"};
+    background-color: ${props => props.$currentpath ? "white" : "#00162b"};
+    border-radius: 6px;
+
+    &:hover {
+        ${props => props.$currentpath ? 
+        "" : 
+        "background-color: rgba(255, 255, 255, 0.1);"
+        };
+    }
 
     a {
-        color: #74b1be;
+        color: ${props => props.$currentpath ? "#00162b" : "white"};
         text-decoration: none;
     }
 
     a:visited {
-        color: #74b1be;
+        color: ${props => props.$currentpath ? "#00162b" : "white"};
     }
+`
+
+const StyledLink = styled(Link)`
+    height: 40px;
+    padding: 0 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `
 
 export default function NavBar() {
     return (
         <Bar>
             <Entry $currentpath={usePathname() && usePathname() === '/home/'}>
-                <Link href="/home">
-                    VERSCHIL
-                </Link>
-            </Entry>
+                <StyledLink href="/home">
+                    Verschil
+                </StyledLink>
+            </Entry>    
             <Entry $currentpath={usePathname() && usePathname() === '/schedule/'}>
-                <Link href="/schedule">
-                    PLANNER
-                </Link>
+                <StyledLink href="/schedule">
+                    Planner
+                </StyledLink>
             </Entry>
             <Entry $currentpath={usePathname() && usePathname() === '/teams/'}>
-                <Link href="/teams">
-                    TEAMS
-                </Link>
+                <StyledLink href="/teams">
+                    Organizatie
+                </StyledLink>
             </Entry>
         </Bar>
     )

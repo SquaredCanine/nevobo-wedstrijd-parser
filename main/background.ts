@@ -2,11 +2,10 @@ import path from 'path'
 import { app, dialog, ipcMain } from 'electron'
 import serve from 'electron-serve'
 import { createWindow } from './helpers'
-import { REQUEST_DIFFERENCE, REQUEST_OFFICIALS, REQUEST_OFFICIALS_OPEN, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_DIFFERENCE, RESPONSE_OFFICIALS, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2, RESPONSE_SCHEDULE } from '../common/events'
+import { REQUEST_DIFFERENCE, REQUEST_OPEN_FILE_1, REQUEST_OPEN_FILE_2, RESPONSE_DIFFERENCE, RESPONSE_OPEN_FILE_1, RESPONSE_OPEN_FILE_2 } from '../common/events'
 import XLSX from 'xlsx'
-import { GameEntry, MatchedGame } from '../common/interfaces'
+import { MatchedGame } from '../common/interfaces'
 import { ScheduleLoader } from './planner/scheduleLoader'
-import { Organization } from './organization/organization'
 import { initializeOrgEventHandlers } from './organization/eventHandlers'
 import { initializeScheduleEventHandlers } from './planner/eventHandlers'
 
@@ -28,6 +27,8 @@ if (isProd) {
       preload: path.join(__dirname, 'preload.js'),
     },
   })
+  
+  mainWindow.removeMenu()
 
   if (isProd) {
     await mainWindow.loadURL('app://./home')
