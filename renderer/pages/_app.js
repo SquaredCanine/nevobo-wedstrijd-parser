@@ -1,4 +1,5 @@
 import '../../styles/global.css';
+import '@fontsource-variable/roboto-mono';
 
 /**
  * Parent component of all pages

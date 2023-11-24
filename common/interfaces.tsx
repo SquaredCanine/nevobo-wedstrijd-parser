@@ -24,16 +24,14 @@ export interface Team {
 }
 
 export interface Official {
+    relatieNummer ?: string,
     naam: string,
-    team ?: string
-}
- 
-export interface Scheidsrechter extends Official {
+    team ?: string,
     licentieNiveau: number
 }
 
 export interface PlannedMatch {
     wedstrijd: GameEntry,
     teller: Official,
-    scheidsrechter: Scheidsrechter
+    scheidsrechter: Official
 }

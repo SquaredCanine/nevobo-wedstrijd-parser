@@ -1,23 +1,43 @@
 import Head from "next/head"
 import React from "react"
 import NavBar from "../components/NavBar"
-import { Official, Scheidsrechter, Team } from "../../common/interfaces";
+import { Official, Team } from "../../common/interfaces";
 import { REQUEST_OFFICIALS, REQUEST_OFFICIALS_OPEN, REQUEST_OFFICIALS_SAVE, REQUEST_OFFICIALS_UPDATE, RESPONSE_OFFICIALS, RESPONSE_OFFICIALS_SAVE } from "../../common/events";
 import styled from "styled-components";
+import { licentieNiveauToString } from "../util/util";
+import { Button } from "../components/button";
+
+const WelkomWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 80vh;
+    justify-content: center;
+    align-items: center;
+`
 
 const TeamWrapper = styled.div`
-    width: 10vw;
-    background-color: black;
+    width: 100vw;
 `
 
 const TeamHeader = styled.div`
-    width: 15vw;
-    background-color: blue;
+    width: 100vw;
+    background-color: #00469d;
+    color: white;
+    display: flex;
+    justify-content: center;
 `
 
 const OfficialWrapper = styled.div`
-    width: 50vw;
-    background-color: green;
+    width: 100vw;
+    padding: 0.5vh 0px;
+    background-color: #89CFF0;
+    display: flex;
+    justify-content: space-evenly;
+`
+
+const OfficialAttribute = styled.div`
+    width: 25vw;
 `
 
 
@@ -171,9 +191,18 @@ export default function TeamsPage() {
     const renderOfficial = (team: Team, official: Official) => {
         return (
             <OfficialWrapper>
-                <>
-                    {official.naam} - {getTeamDropdown(team, official)} - {official.licentieNiveau && official.licentieNiveau}
-                </>
+                <OfficialAttribute>
+                    {official.relatieNummer}
+                </OfficialAttribute>
+                <OfficialAttribute>
+                    {licentieNiveauToString(official.licentieNiveau)}
+                </OfficialAttribute>
+                <OfficialAttribute>
+                    {official.naam}
+                </OfficialAttribute>
+                <OfficialAttribute>
+                    {getTeamDropdown(team, official)}
+                </OfficialAttribute>
             </OfficialWrapper>
 
         )
@@ -186,7 +215,16 @@ export default function TeamsPage() {
                     {team.naam}
                 </TeamHeader>
                 {
-                    team.officials.map((official) => { return renderOfficial(team, official) })
+                    team.officials
+                        .sort((a, b) => {
+                            const licenseCompare =  b.licentieNiveau - a.licentieNiveau
+                            if (licenseCompare === 0) {
+                                return a.naam.localeCompare(b.naam)
+                            } else {
+                                return licenseCompare
+                            }
+                        })
+                        .map((official) => { return renderOfficial(team, official) })
                 }
             </TeamWrapper>
         )
@@ -194,16 +232,14 @@ export default function TeamsPage() {
 
     const renderSelecteerTeam = () => {
         return (
-            <>
-                <button
-                    onClick={() => {
-                        window.ipc.send(REQUEST_OFFICIALS_OPEN, undefined); console.log("Triggered");
-                    }}
-                >
-                    Selecteer scheidsrechters bestand
-                </button>
+            <WelkomWrapper>
                 Vul hier je teams en scheidsrechters in !
-            </>
+                <Button onClick={() => {
+                    window.ipc.send(REQUEST_OFFICIALS_OPEN, undefined); console.log("Triggered");
+                }}>
+                    Selecteer bestand
+                </Button>
+            </WelkomWrapper>
         )
     }
 
