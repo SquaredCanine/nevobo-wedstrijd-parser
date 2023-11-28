@@ -8,7 +8,7 @@ let organization: Organization | undefined = undefined
 const getRefereeFile = (): string[] | undefined => {
     return dialog.showOpenDialogSync({
         title: "Kies je scheidsrechters excel bestand",
-        filters: [{ name: "Excel", extensions: ['xlsx'] }, { name: "JSON", extensions: ['json'] }],
+        filters: [{ name: "JSON", extensions: ['json'] }, { name: "Excel", extensions: ['xlsx'] }],
         properties: ["openFile"]
     })
 }
@@ -17,7 +17,7 @@ export function initializeOrgEventHandlers(ipcMain: Electron.IpcMain) {
 
     const sendTeams = (event: Electron.IpcMainEvent) => {
         if (organization) {
-            event.reply(RESPONSE_OFFICIALS, organization.teams)
+            event.reply(RESPONSE_OFFICIALS, organization.getTeams())
         }
     }
 
@@ -35,7 +35,7 @@ export function initializeOrgEventHandlers(ipcMain: Electron.IpcMain) {
 
     ipcMain.on(REQUEST_OFFICIALS_UPDATE, async (event, teams: Team[]) => {
         if (organization) {
-            organization.teams = teams;
+            organization.update(teams)
         }
         sendTeams(event)
     })

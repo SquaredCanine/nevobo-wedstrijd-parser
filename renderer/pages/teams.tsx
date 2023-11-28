@@ -165,6 +165,7 @@ export default function TeamsPage() {
         const teamMap = new Map<string, Team>();
         teams.forEach((team) => teamMap.set(team.naam, team))
         const oudTeamOfficials = oudTeam.officials.filter((_official) => { return _official.naam !== official.naam })
+        official.team = nieuwTeam
         teamMap.get(nieuwTeam).officials.push(official)
         teamMap.get(oudTeam.naam).officials = oudTeamOfficials
         setTeams(Array.from(teamMap.values()))

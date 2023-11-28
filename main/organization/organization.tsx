@@ -6,7 +6,7 @@ import XLSX from 'xlsx'
 export class Organization {
     static organizationFolder: string = `${os.homedir()}/.wedstrijdplanner/organisatie`
     organizationFile: string
-    teams: Team[]
+    private teams: Team[]
     static licentieNiveau = {
         "S-R1": 4,
         "S-R2": 3,
@@ -24,8 +24,9 @@ export class Organization {
                 sheet.forEach((entry) => {
                     officials.push({
                         naam: entry['Volledige naam'],
-                        relatiecode: entry['Relatiecode'], 
-                        licentieNiveau: Organization.licentieNiveau[sheetName] || 0
+                        relatiecode: entry['Relatiecode'],
+                        licentieNiveau: Organization.licentieNiveau[sheetName] || 0,
+                        team: "??"
                     })
                 })
             })
@@ -42,7 +43,15 @@ export class Organization {
         }
     }
 
+    getTeams() {
+        return this.teams;
+    }
+
+    update(teams: Team[]) {
+        this.teams = teams;
+    }
+
     save() {
-        fs.writeFile(this.organizationFile, JSON.stringify(this.teams, undefined, 4), {encoding: 'utf-8'}, (err) => console.log(err))
+        fs.writeFile(this.organizationFile, JSON.stringify(this.teams, undefined, 4), { encoding: 'utf-8' }, (err) => console.log(err))
     }
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import Head from 'next/head'
 import NavBar from '../components/NavBar'
-import { REQUEST_SCHEDULE, REQUEST_OFFICIALS, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_OFFICIALS, RESPONSE_SCHEDULE, RESPONSE_SCHEDULE_SAVE } from '../../common/events'
+import { REQUEST_SCHEDULE, REQUEST_OFFICIALS, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_OFFICIALS, RESPONSE_SCHEDULE, RESPONSE_SCHEDULE_SAVE, REQUEST_EXPORT_SCHEDULE } from '../../common/events'
 import { Official, PlannedMatch, Team } from '../../common/interfaces'
 import styled from 'styled-components'
 
@@ -34,7 +34,7 @@ export default function SchedulePage() {
     window.ipc.on(RESPONSE_OFFICIALS, (teams: Team[]) => {
       const result = teams
         .sort((a, b) => a.naam.localeCompare(b.naam))
-        .reduce((map, obj) => (map[obj.naam] = obj, map), new Map<string, Team>);
+        .reduce((map, obj) => (map[obj.naam] = obj, map), new Map<string, Team>());
       setTeams(result)
       setOfficials(teams.flatMap((team) => team.officials))
     })
@@ -80,17 +80,7 @@ export default function SchedulePage() {
     const handleScheidsrechterChange = (gameCode, value) => {
       console.log("Updating scheidsrechter: " + JSON.stringify(value))
       const newEntry = scheduleMap.get(gameCode)
-      const official = officials.find((official) => official.naam === value)
-      let scheidsrechter: Official
-      if (official.licentieNiveau) {
-        scheidsrechter = official
-      } else {
-        scheidsrechter = {
-          naam: value.naam,
-          licentieNiveau: 0,
-        }
-      }
-      newEntry.scheidsrechter = scheidsrechter;
+      newEntry.scheidsrechter = officials.find((official) => official.naam === value)
       setScheduleMap((map) => new Map(map.set(gameCode, newEntry)))
       window.ipc.send(REQUEST_UPDATE_SCHEDULE, Array.from(scheduleMap.values()))
     }
@@ -142,7 +132,7 @@ export default function SchedulePage() {
       <div>
         <button
           onClick={() => {
-            window.ipc.send(REQUEST_UPDATE_SCHEDULE, [Array.from(scheduleMap.values())])
+            window.ipc.send(REQUEST_UPDATE_SCHEDULE, Array.from(scheduleMap.values()))
           }}
         >
           Update schedule
@@ -155,6 +145,15 @@ export default function SchedulePage() {
           }}
         >
           Save schedule
+        </button>
+      </div>
+      <div>
+        <button
+          onClick={() => {
+            window.ipc.send(REQUEST_EXPORT_SCHEDULE, undefined)
+          }}
+        >
+          Export schedule
         </button>
       </div>
     </React.Fragment>
