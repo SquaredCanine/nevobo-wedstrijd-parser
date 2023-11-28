@@ -2,7 +2,7 @@ import React from 'react'
 import Head from 'next/head'
 import NavBar from '../components/NavBar'
 import { REQUEST_SCHEDULE, REQUEST_OFFICIALS, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_OFFICIALS, RESPONSE_SCHEDULE, RESPONSE_SCHEDULE_SAVE } from '../../common/events'
-import { Official, PlannedMatch, Scheidsrechter, Team } from '../../common/interfaces'
+import { Official, PlannedMatch, Team } from '../../common/interfaces'
 import styled from 'styled-components'
 
 const Attribute = styled.div`
@@ -81,9 +81,9 @@ export default function SchedulePage() {
       console.log("Updating scheidsrechter: " + JSON.stringify(value))
       const newEntry = scheduleMap.get(gameCode)
       const official = officials.find((official) => official.naam === value)
-      let scheidsrechter: Scheidsrechter
+      let scheidsrechter: Official
       if (official.licentieNiveau) {
-        scheidsrechter = official as Scheidsrechter
+        scheidsrechter = official
       } else {
         scheidsrechter = {
           naam: value.naam,

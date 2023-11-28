@@ -1,4 +1,4 @@
-import { Official, Scheidsrechter, Team } from "../../common/interfaces";
+import { Official, Team } from "../../common/interfaces";
 import fs from 'fs'
 import os from 'os'
 import XLSX from 'xlsx'
@@ -18,12 +18,13 @@ export class Organization {
         fs.mkdirSync(Organization.organizationFolder, { recursive: true })
         if (file && file.includes('.xlsx')) {
             const workbook = XLSX.readFile(file);
-            let officials: Scheidsrechter[] = []
+            let officials: Official[] = []
             workbook.SheetNames.forEach((sheetName) => {
                 const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { raw: false })
                 sheet.forEach((entry) => {
                     officials.push({
                         naam: entry['Volledige naam'],
+                        relatiecode: entry['Relatiecode'], 
                         licentieNiveau: Organization.licentieNiveau[sheetName] || 0
                     })
                 })

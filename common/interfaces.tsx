@@ -24,7 +24,7 @@ export interface Team {
 }
 
 export interface Official {
-    relatieNummer ?: string,
+    relatiecode ?: string,
     naam: string,
     team ?: string,
     licentieNiveau: number

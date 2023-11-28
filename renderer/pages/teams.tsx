@@ -192,7 +192,7 @@ export default function TeamsPage() {
         return (
             <OfficialWrapper>
                 <OfficialAttribute>
-                    {official.relatieNummer}
+                    {official.relatiecode}
                 </OfficialAttribute>
                 <OfficialAttribute>
                     {licentieNiveauToString(official.licentieNiveau)}
