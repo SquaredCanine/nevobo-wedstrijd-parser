@@ -86,6 +86,7 @@ export default function SchedulePage() {
     }
 
     return Array.from(scheduleMap.entries()).map(([code, game]) => {
+      console.log(Object.values(teams).find((team) => team.naam === game.wedstrijd.thuisTeam))
       return (
         <Game>
           <Attribute>{game.wedstrijd.datum}</Attribute>
@@ -93,7 +94,7 @@ export default function SchedulePage() {
           <Attribute>{game.wedstrijd.veld}</Attribute>
           <Attribute>{game.wedstrijd.thuisTeam}</Attribute>
           <Attribute>{game.wedstrijd.uitTeam}</Attribute>
-          <Attribute>COACH</Attribute>
+          <Attribute>{Object.values(teams).find((team) => team.naam === game.wedstrijd.thuisTeam)?.coach ?? "Geen"}</Attribute>
           { /** Scheidsrechter */ renderOfficialSelectionMenu((official) => handleScheidsrechterChange(code, official), game.scheidsrechter)}
           { /** Teller */ renderOfficialSelectionMenu((official) => handleTellerChange(code, official), game.teller)}
         </Game>

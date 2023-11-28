@@ -33,6 +33,7 @@ export class Organization {
             this.teams = [
                 {
                     naam: "??",
+                    coach: "Geen",
                     officials
                 }
             ]

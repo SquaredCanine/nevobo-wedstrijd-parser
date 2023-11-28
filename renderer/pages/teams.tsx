@@ -6,6 +6,7 @@ import { REQUEST_OFFICIALS, REQUEST_OFFICIALS_OPEN, REQUEST_OFFICIALS_SAVE, REQU
 import styled from "styled-components";
 import { licentieNiveauToString } from "../util/util";
 import { Button } from "../components/button";
+import { ipcMain } from "electron";
 
 const WelkomWrapper = styled.div`
     display: flex;
@@ -40,6 +41,10 @@ const OfficialAttribute = styled.div`
     width: 25vw;
 `
 
+const CoachDiv = styled.div`
+    min-width: 4vw;
+    margin-left: 1vw;
+`
 
 export default function TeamsPage() {
 
@@ -209,16 +214,35 @@ export default function TeamsPage() {
         )
     }
 
+    const changeCoach = (team: Team, coach: string) => {
+        team.coach = coach;
+    }
+
+    const updateCoach = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === "Enter") {
+            console.log("Update!")
+            e.target.blur()
+            window.ipc.send(REQUEST_OFFICIALS_UPDATE, teams)
+        }
+    }
+
     const renderTeam = (team: Team) => {
         return (
             <TeamWrapper>
                 <TeamHeader>
-                    {team.naam}
+                    {team.naam} - <CoachDiv
+                        contentEditable
+                        suppressContentEditableWarning={true}
+                        onInput={(event) => changeCoach(team, event.currentTarget.textContent)}
+                        onKeyUp={updateCoach}
+                    >
+                        {team.coach ?? "Geen"}
+                    </CoachDiv>
                 </TeamHeader>
                 {
                     team.officials
                         .sort((a, b) => {
-                            const licenseCompare =  b.licentieNiveau - a.licentieNiveau
+                            const licenseCompare = b.licentieNiveau - a.licentieNiveau
                             if (licenseCompare === 0) {
                                 return a.naam.localeCompare(b.naam)
                             } else {

@@ -8,6 +8,7 @@ import { MatchedGame } from '../common/interfaces'
 import { ScheduleLoader } from './planner/scheduleLoader'
 import { initializeOrgEventHandlers } from './organization/eventHandlers'
 import { initializeScheduleEventHandlers } from './planner/eventHandlers'
+import { initializeExportEventHandlers } from './export/eventHandlers'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -28,9 +29,9 @@ if (isProd) {
     },
   })
   
-  mainWindow.removeMenu()
 
   if (isProd) {
+    mainWindow.removeMenu()
     await mainWindow.loadURL('app://./home')
   } else {
     const port = process.argv[2]
@@ -49,6 +50,7 @@ app.on('window-all-closed', () => {
 
 initializeOrgEventHandlers(ipcMain)
 initializeScheduleEventHandlers(ipcMain)
+initializeExportEventHandlers(ipcMain)
 
 ipcMain.on('message', async (event, arg) => {
   console.log("message!")

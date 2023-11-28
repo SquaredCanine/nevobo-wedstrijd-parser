@@ -3,7 +3,7 @@ import { REQUEST_OFFICIALS, REQUEST_OFFICIALS_OPEN, REQUEST_OFFICIALS_SAVE, REQU
 import { Organization } from "./organization";
 import { Team } from "../../common/interfaces";
 
-let organization: Organization | undefined = undefined
+export let organization: Organization | undefined = undefined
 
 const getRefereeFile = (): string[] | undefined => {
     return dialog.showOpenDialogSync({

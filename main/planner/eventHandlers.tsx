@@ -1,8 +1,8 @@
 import { dialog } from "electron";
-import { REQUEST_EXPORT_SCHEDULE, REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_SCHEDULE } from "../../common/events";
+import { REQUEST_OPEN_SCHEDULE, REQUEST_SAVE_SCHEDULE, REQUEST_SCHEDULE, REQUEST_UPDATE_SCHEDULE, RESPONSE_SCHEDULE } from "../../common/events";
 import { ScheduleLoader } from "./scheduleLoader";
 
-let openSchedule: ScheduleLoader | undefined = undefined
+export let openSchedule: ScheduleLoader | undefined = undefined
 
 const getScheduleFile = (): string[] | undefined => {
     return dialog.showOpenDialogSync({
@@ -12,22 +12,7 @@ const getScheduleFile = (): string[] | undefined => {
     })
 }
 
-const selectScheduleExportFile = (): string | undefined => {
-    return dialog.showSaveDialogSync({
-        title: "Waar wil je het naartoe exporteren?",
-        filters: [{ name: "Excel", extensions: ['xlsx'] }]
-    })
-}
-
-
 export function initializeScheduleEventHandlers(ipcMain: Electron.IpcMain) {
-
-    ipcMain.on(REQUEST_EXPORT_SCHEDULE, async (event, _) => {
-        const saveFile = selectScheduleExportFile()
-        if (openSchedule && saveFile) {
-            openSchedule.export(saveFile)
-        }
-    })
 
     ipcMain.on(REQUEST_OPEN_SCHEDULE, async (event, _) => {
         const files = getScheduleFile();
